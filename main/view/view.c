@@ -57,7 +57,7 @@ void view_init(model_updater_t updater, pman_user_msg_cb_t controller_cb,
     /*Register the driver in LVGL and save the created input device object*/
     lv_indev_t *touch_indev = lv_indev_drv_register(&indev_drv);
 
-    pman_init(&pman, updater, touch_indev, controller_cb);
+    pman_init(&pman, updater, touch_indev, controller_cb, NULL);
 }
 
 
