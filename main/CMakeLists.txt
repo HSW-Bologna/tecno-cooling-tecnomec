@@ -1,2 +1,2 @@
-idf_component_register(SRC_DIRS . config model view view/intl view/pages view/intl view/theme controller peripherals
+idf_component_register(SRC_DIRS . model adapters/view adapters/view/intl adapters/view/pages adapters/view/intl adapters/view/theme controller bsp bsp/tft
                     INCLUDE_DIRS .)

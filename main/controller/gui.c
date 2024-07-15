@@ -1,8 +1,8 @@
 #include "model/model.h"
-#include "view/view.h"
+#include "adapters/view/view.h"
 #include "controller.h"
 #include "esp_log.h"
-#include "services/system_time.h"
+#include "services/timestamp.h"
 #include "lvgl.h"
 
 
@@ -11,14 +11,17 @@ static const char *TAG = "Gui";
 
 void controller_gui_manage(void) {
     (void)TAG;
-    static unsigned long last_invoked = 0;
 
-    if (last_invoked != get_millis()) {
+#ifndef BUILD_CONFIG_SIMULATED_APP
+    static timestamp_t last_invoked = 0;
+
+    if (last_invoked != timestamp_get()) {
         if (last_invoked > 0) {
-            lv_tick_inc(time_interval(last_invoked, get_millis()));
+            lv_tick_inc(timestamp_interval(last_invoked, timestamp_get()));
         }
-        last_invoked = get_millis();
+        last_invoked = timestamp_get();
     }
+#endif
 
     lv_timer_handler();
 }

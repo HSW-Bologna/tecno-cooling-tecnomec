@@ -2,8 +2,11 @@
 #define VIEW_H_INCLUDED
 
 
-#include "model/model_updater.h"
+#include "model/model.h"
 #include "page_manager.h"
+
+
+#define VIEW_LVGL_BUFFER_SIZE (BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION * 10)
 
 
 typedef enum {
@@ -17,11 +20,11 @@ typedef struct {
 } view_controller_msg_t;
 
 
-void view_init(model_updater_t updater, pman_user_msg_cb_t controller_cb,
-               void (*flush_cb)(struct _lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p),
-               void (*read_cb)(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *data));
+void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_flush_cb_t flush_cb,
+               lv_indev_read_cb_t read_cb);
 
 void view_change_page(const pman_page_t *page);
+void view_display_flush_ready(void);
 
 
 extern const pman_page_t page_main;

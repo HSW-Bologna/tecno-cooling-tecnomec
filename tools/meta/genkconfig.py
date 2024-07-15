@@ -27,7 +27,7 @@ def generate_sdkconfig_header(target, source, env):
         for (key, sym) in [(x, config.syms[x]) for x in config.syms.keys()]:
             if sym.type == kconfiglib.BOOL and sym.str_value == 'y':
                 content += "#define CONFIG_{} 1\n".format(key)
-            elif sym.type == kconfiglib.INT:
+            elif sym.type == kconfiglib.INT and sym.str_value:
                 content += "#define CONFIG_{} {}\n".format(key, sym.str_value)
             elif sym.type == kconfiglib.STRING and len(sym.str_value) > 0:
                 if key in ['LV_USER_DATA_FREE', 'LV_MEM_CUSTOM_FREE', 'LV_MEM_CUSTOM_ALLOC', 'LV_TICK_CUSTOM_SYS_TIME_EXPR']:

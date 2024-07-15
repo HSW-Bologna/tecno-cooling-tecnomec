@@ -4,7 +4,7 @@
 #include "lvgl.h"
 
 
-void theme_init(lv_disp_t *disp);
+void theme_init(lv_display_t *disp);
 
 
 #endif

@@ -28,26 +28,26 @@ FREERTOS = f"{SIMULATOR}/freertos-simulator"
 CJSON = f"{SIMULATOR}/cJSON"
 B64 = f"{SIMULATOR}/b64"
 LVGL = f"{COMPONENTS}/lvgl"
-DRIVERS = f"{SIMULATOR}/lv_drivers"
-STRING_TRANSLATIONS = f"{MAIN}/view/intl"
+STRING_TRANSLATIONS = f"{MAIN}/adapters/view/intl"
 
 CFLAGS = [
     "-Wall",
     "-Wextra",
     "-g",
     "-O0",
-    "-DSIMULATED_APPLICATION",
+    "-DBUILD_CONFIG_SIMULATED_APP",
+    "-DBUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION=480",
+    "-DBUILD_CONFIG_DISPLAY_VERTICAL_RESOLUTION=320",
+    "-DLV_USE_SDL",
     "-DESP_PLATFORM",
     "-DLV_CONF_INCLUDE_SIMPLE",
-    "-DLV_HOR_RES_MAX=480",
-    "-DLV_VER_RES_MAX=320",
     '-DprojCOVERAGE_TEST=0',
 ]
 LDLIBS = ["-lSDL2", "-lpthread", "-lm"]
 
 CPPPATH = [
     COMPONENTS, f'#{SIMULATOR}/port', f'#{MAIN}',
-    f"#{MAIN}/config", f"#{SIMULATOR}", B64, CJSON, f"#{LVGL}", f"#{DRIVERS}", 
+    f"#{MAIN}/config", f"#{SIMULATOR}", B64, CJSON, f"#{LVGL}", 
 ]
 
 TRANSLATIONS = [
@@ -103,14 +103,13 @@ def main():
     sources += [File(filename) for filename in Path('main/model').rglob('*.c')]
     sources += [File(filename)
                 for filename in Path('main/config').rglob('*.c')]
-    sources += [File(filename) for filename in Path('main/view').rglob('*.c')]
+    sources += [File(filename) for filename in Path('main/adapters').rglob('*.c')]
     sources += [File(filename)
                 for filename in Path('main/controller').glob('*.c')]
     sources += [File(filename)
                 for filename in Path('main/services').rglob('*.c')]
     sources += [File(filename)
                 for filename in Path(f'{LVGL}/src').rglob('*.c')]
-    sources += [File(filename) for filename in Path(DRIVERS).rglob('*.c')]
     sources += [File(f'{CJSON}/cJSON.c')]
     sources += [File(f'{B64}/encode.c'),
                 File(f'{B64}/decode.c'), File(f'{B64}/buffer.c')]

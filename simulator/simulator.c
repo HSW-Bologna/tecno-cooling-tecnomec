@@ -1,11 +1,9 @@
 #include "FreeRTOS.h"
-#include "model/model_updater.h"
 #include "task.h"
 #include "esp_log.h"
-#include "sdl/sdl.h"
-
+#include "lvgl.h"
 #include "model/model.h"
-#include "view/view.h"
+#include "adapters/view/view.h"
 #include "controller/controller.h"
 #include "controller/gui.h"
 
@@ -18,16 +16,13 @@ void app_main(void *arg) {
 
     mut_model_t model = {0};
 
-    lv_init();
-    sdl_init();
-
-    model_updater_t updater = model_updater_init(&model);
-    view_init(updater, controller_process_message, sdl_display_flush, sdl_mouse_read);
-    controller_init(updater);
+    model_init(&model);
+    view_init(&model, controller_process_message, NULL, NULL);
+    controller_init(&model);
 
     ESP_LOGI(TAG, "Begin main loop");
     for (;;) {
-        controller_manage(updater);
+        controller_manage(&model);
 
         vTaskDelay(pdMS_TO_TICKS(5));
     }

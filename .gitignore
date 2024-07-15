@@ -1,5 +1,6 @@
 # Custom
 tmp
+managed_components
 
 # Scons
 .sconsign.dblite

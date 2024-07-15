@@ -3,31 +3,32 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "esp_log.h"
-#include "lvgl_helpers.h"
-#include "lvgl_i2c/i2c_manager.h"
 #include "model/model.h"
-#include "view/view.h"
+#include "adapters/view/view.h"
 #include "controller/controller.h"
 #include "controller/gui.h"
-#include "peripherals/tsc2046.h"
+#include "bsp/system.h"
+#include "bsp/tft/display.h"
+#include "bsp/tft/touch.h"
 
 static const char *TAG = "Main";
 
 void app_main(void) {
-    mut_model_t     model   = {0};
-    model_updater_t updater = model_updater_init(&model);
+    ESP_LOGI(TAG, "Main");
 
-    //lvgl_i2c_init(I2C_NUM_0);
-    lvgl_driver_init();
-    tsc2046_init();
+    mut_model_t model = {0};
+
+    bsp_system_init();
+    bsp_tft_display_init(view_display_flush_ready, VIEW_LVGL_BUFFER_SIZE);
+    bsp_tft_touch_init();
 
     model_init(&model);
-    view_init(updater, controller_process_message, disp_driver_flush, tsc2046_touch_read);
-    controller_init(updater);
+    view_init(&model, controller_process_message, bsp_tft_display_lvgl_flush_cb, bsp_tft_touch_read);
+    controller_init(&model);
 
     ESP_LOGI(TAG, "Begin main loop");
     for (;;) {
-        controller_manage(updater);
+        controller_manage(&model);
 
         vTaskDelay(pdMS_TO_TICKS(5));
     }
