@@ -39,9 +39,12 @@ void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_fl
     style_init();
     theme_init(display);
 
-    lv_indev_t *touch_indev = lv_indev_create();
-    lv_indev_set_type(touch_indev, LV_INDEV_TYPE_POINTER);
-    lv_indev_set_read_cb(touch_indev, read_cb);
+    lv_indev_t *touch_indev = NULL;
+    if (read_cb) {
+        touch_indev = lv_indev_create();
+        lv_indev_set_type(touch_indev, LV_INDEV_TYPE_POINTER);
+        lv_indev_set_read_cb(touch_indev, read_cb);
+    }
 
 #endif
 

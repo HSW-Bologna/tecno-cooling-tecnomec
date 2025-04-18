@@ -35,6 +35,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_t *btn, *lbl;
 
     btn = lv_btn_create(lv_scr_act());
+    lv_obj_set_style_bg_color(btn, lv_color_make(0xFF, 0, 0), LV_STATE_DEFAULT);
     lbl = lv_label_create(btn);
     lv_label_set_text(lbl, view_intl_get_string(p_model, STRINGS_HELLO_WORLD));
     lv_obj_center(lbl);
@@ -42,11 +43,13 @@ static void open_page(pman_handle_t handle, void *state) {
 
     btn = lv_btn_create(lv_scr_act());
     lv_obj_set_size(btn, 64, 64);
+    lv_obj_set_style_bg_color(btn, lv_color_make(0, 0xff, 0), LV_STATE_DEFAULT);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 16, -16);
 
     btn = lv_btn_create(lv_scr_act());
+    lv_obj_set_style_bg_color(btn, lv_color_make(0, 0, 0xff), LV_STATE_DEFAULT);
     lv_obj_set_size(btn, 64, 64);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -16);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -48);
 
     btn = lv_btn_create(lv_scr_act());
     lv_obj_set_size(btn, 64, 64);

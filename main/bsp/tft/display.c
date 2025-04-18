@@ -23,7 +23,7 @@ static const char *TAG = "TftDisplay";
 static const int          DISPLAY_COMMAND_BITS   = 8;
 static const int          DISPLAY_PARAMETER_BITS = 8;
 static const unsigned int DISPLAY_REFRESH_HZ     = 40000000;
-static const int          DISPLAY_SPI_QUEUE_LEN  = 10;
+static const int          DISPLAY_SPI_QUEUE_LEN  = 8;
 
 // Default to 25 lines of color data
 
@@ -107,15 +107,16 @@ void bsp_tft_display_init(void (*display_flush_ready_cb)(void), size_t buffer_si
 
     const esp_lcd_panel_dev_config_t lcd_config = {
         .reset_gpio_num = BSP_HAP_RESET_D,
-        .color_space    = LCD_RGB_ELEMENT_ORDER_RGB,
-        .bits_per_pixel = 18,
+        .data_endian    = LCD_RGB_DATA_ENDIAN_LITTLE,
+        .rgb_ele_order  = LCD_RGB_ELEMENT_ORDER_RGB,
+        .bits_per_pixel = 16,
         .flags          = {.reset_active_high = 0},
         .vendor_config  = NULL,
     };
 
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST, &io_config, &lcd_io_handle));
 
-    ESP_ERROR_CHECK(esp_lcd_new_panel_ili9488(lcd_io_handle, &lcd_config, buffer_size, &lcd_handle));
+    ESP_ERROR_CHECK(esp_lcd_new_panel_st7789(lcd_io_handle, &lcd_config, &lcd_handle));
 
     ESP_ERROR_CHECK(esp_lcd_panel_reset(lcd_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(lcd_handle));
@@ -136,8 +137,6 @@ void bsp_tft_display_init(void (*display_flush_ready_cb)(void), size_t buffer_si
 void bsp_tft_display_brightness_set(uint8_t brightness_percentage) {
     if (brightness_percentage > 100) {
         brightness_percentage = 100;
-    } else if (brightness_percentage < 0) {
-        brightness_percentage = 0;
     }
 
     // LEDC resolution set to 10bits, thus: 100% = 1023

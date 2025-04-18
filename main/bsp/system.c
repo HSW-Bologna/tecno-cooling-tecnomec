@@ -13,7 +13,7 @@ void bsp_system_init(void) {
     ESP_LOGI(TAG, "Initializing SPI bus (MOSI:%d, MISO:%d, CLK:%d)", BSP_HAP_DOUT_D, GPIO_NUM_NC, BSP_HAP_CLK_D);
     spi_bus_config_t bus = {
         .mosi_io_num     = BSP_HAP_DOUT_D,
-        .miso_io_num     = GPIO_NUM_NC,
+        .miso_io_num     = BSP_HAP_MISO_D,
         .sclk_io_num     = BSP_HAP_CLK_D,
         .quadwp_io_num   = GPIO_NUM_NC,
         .quadhd_io_num   = GPIO_NUM_NC,

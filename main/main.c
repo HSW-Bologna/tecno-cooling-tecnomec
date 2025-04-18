@@ -8,10 +8,17 @@
 #include "controller/controller.h"
 #include "controller/gui.h"
 #include "bsp/system.h"
+#include "bsp/buttons.h"
+#include "bsp/inputs.h"
+#include "bsp/leds.h"
+#include "bsp/buzzer.h"
+#include "bsp/temperature.h"
+#include "bsp/i2c_devices.h"
 #include "bsp/tft/display.h"
-#include "bsp/tft/touch.h"
+
 
 static const char *TAG = "Main";
+
 
 void app_main(void) {
     ESP_LOGI(TAG, "Main");
@@ -19,17 +26,24 @@ void app_main(void) {
     mut_model_t model = {0};
 
     bsp_system_init();
+    bsp_buttons_init();
+    bsp_buzzer_init();
+    bsp_inputs_init();
+    bsp_leds_init();
+    bsp_temperature_init();
     bsp_tft_display_init(view_display_flush_ready, VIEW_LVGL_BUFFER_SIZE);
-    bsp_tft_touch_init();
+    bsp_i2c_devices_init();
 
     model_init(&model);
-    view_init(&model, controller_process_message, bsp_tft_display_lvgl_flush_cb, bsp_tft_touch_read);
+    view_init(&model, controller_process_message, bsp_tft_display_lvgl_flush_cb, NULL);
     controller_init(&model);
 
+    bsp_buzzer_beep(1, 100, 50, 10);
     ESP_LOGI(TAG, "Begin main loop");
+
     for (;;) {
         controller_manage(&model);
 
-        vTaskDelay(pdMS_TO_TICKS(5));
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
