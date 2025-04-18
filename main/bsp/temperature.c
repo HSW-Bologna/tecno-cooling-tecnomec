@@ -80,9 +80,8 @@ double bsp_temperature_get(void) {
 }
 
 
-double bsp_temperature_manage(void) {
-    static timestamp_t ts     = 0;
-    static double      cached = 0;
+uint8_t bsp_temperature_manage(void) {
+    static timestamp_t ts = 0;
 
     if (timestamp_is_expired(ts, 1000)) {
         if (max31865_status(max31865_driver)) {
@@ -96,16 +95,15 @@ double bsp_temperature_manage(void) {
             round_trip = 1;
         }
 
-        cached = bsp_temperature_get();
-        ESP_LOGI(TAG, "%i %f %i", average_buffer[average_index], cached, max31865_status(max31865_driver));
-
         // Full sensor row, on to the next reading
         average_index = (average_index + 1) % AVERAGE_BUFFER_SIZE;
 
         ts = timestamp_get();
-    }
 
-    return cached;
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 

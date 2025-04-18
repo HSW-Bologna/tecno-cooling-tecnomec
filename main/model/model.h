@@ -6,18 +6,27 @@
 #include <stdlib.h>
 
 
-#define GETTER(name, field)                                                                                            \
-    static inline                                                                                                      \
-        __attribute__((always_inline, const)) typeof(((mut_model_t *)0)->field) model_get_##name(model_t *pmodel) {     \
-        assert(pmodel != NULL);                                                                                         \
-        return pmodel->field;                                                                                           \
-    }
+#define INPUTS_NUM 6
+#define RELAYS_NUM 6
 
 
 struct model {
     struct {
         uint16_t language;
     } config;
+
+    struct {
+        struct {
+            uint8_t  inputs;
+            uint16_t humidity;
+            uint16_t pressure;
+            int16_t  temperature;
+        } sensors;
+
+        uint8_t test_mode;
+        int16_t tested_relay;
+        int16_t test_pwm;
+    } run;
 };
 
 
@@ -25,10 +34,13 @@ typedef const struct model model_t;
 typedef struct model       mut_model_t;
 
 
-void model_init(mut_model_t *pmodel);
-
-
-GETTER(language, config.language);
+void    model_init(mut_model_t *model);
+int     model_get_language(model_t *model);
+uint8_t model_get_relay_map(model_t *model);
+void    model_exit_test_mode(mut_model_t *model);
+void    model_enter_test_mode(mut_model_t *model);
+void    model_test_toggle_relay(mut_model_t *model, uint16_t relay);
+uint8_t model_get_pwm_percentage(model_t *model);
 
 
 #endif

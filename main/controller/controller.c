@@ -3,17 +3,23 @@
 #include "model/model.h"
 #include "adapters/view/view.h"
 #include "gui.h"
-#include "bsp/buttons.h"
 #include "services/system_time.h"
+#include "bsp/buttons.h"
 #include "bsp/i2c_devices.h"
 #include "bsp/relays.h"
 #include "bsp/temperature.h"
+#include "bsp/adc.h"
+#include "bsp/buzzer.h"
+#include "bsp/inputs.h"
+#include "observer.h"
 
 
 static const char *TAG = __FILE_NAME__;
 
 
 void controller_init(mut_model_t *model) {
+    observer_init(model);
+
     if (rx8010_is_stopped(bsp_rtc_driver)) {
         ESP_LOGI(TAG, "RTC was stopped, initializing...");
         rtc_time_t rtc_time = {.day = 7, .wday = 3, .month = 11, .year = 24};
@@ -39,7 +45,18 @@ void controller_process_message(pman_handle_t handle, void *msg) {
 
 
 void controller_manage(mut_model_t *model) {
-    (void)model;
+    if (bsp_inputs_manage()) {
+        model->run.sensors.inputs = bsp_inputs_get_map();
+    }
+
+    if (bsp_temperature_manage()) {
+        model->run.sensors.temperature = (int16_t)(bsp_temperature_get() * 10);
+    }
+
+    if (bsp_adc_manage()) {
+        model->run.sensors.humidity = bsp_adc_get(BSP_ADC_HUMIDITY);
+        model->run.sensors.pressure = bsp_adc_get(BSP_ADC_PRESSURE);
+    }
 
     {
         keypad_event_t event = bsp_button_manage();
@@ -47,13 +64,18 @@ void controller_manage(mut_model_t *model) {
             case KEYPAD_EVENT_TAG_NOTHING:
                 break;
 
+            case KEYPAD_EVENT_TAG_CLICK: {
+                ESP_LOGI(TAG, "Click %i", event.code);
+                bsp_buzzer_beep(1, 20, 0, 10);
+                view_event((view_event_t){.tag = VIEW_EVENT_TAG_BUTTON_CLICK, .as.button_click = event.code});
+                break;
+            }
+
             default:
                 break;
         }
     }
 
-    double temperature = bsp_temperature_manage();
-    //ESP_LOGI(TAG, "%.f", temperature);
-
+    observer_manage(model);
     controller_gui_manage();
 }

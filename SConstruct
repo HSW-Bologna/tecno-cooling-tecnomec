@@ -36,8 +36,8 @@ CFLAGS = [
     "-g",
     "-O0",
     "-DBUILD_CONFIG_SIMULATED_APP",
-    "-DBUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION=480",
-    "-DBUILD_CONFIG_DISPLAY_VERTICAL_RESOLUTION=320",
+    "-DBUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION=320",
+    "-DBUILD_CONFIG_DISPLAY_VERTICAL_RESOLUTION=240",
     "-DLV_USE_SDL",
     "-DESP_PLATFORM",
     "-DLV_CONF_INCLUDE_SIMPLE",
@@ -98,6 +98,28 @@ def main():
         f'{COMPONENTS}/c-page-manager/SConscript', exports=['pman_env'])
     env['CPPPATH'] += [include]
 
+    c_debounce_env = env
+    (debounce, include) = SConscript(
+        f'{COMPONENTS}/c-debounce/SConscript', exports=["c_debounce_env"])
+    env['CPPPATH'] += [include]
+
+    c_watcher_env = env
+    (watcher, include) = SConscript(
+        f'{COMPONENTS}/c-watcher/SConscript', exports=["c_watcher_env"])
+    env['CPPPATH'] += [include]
+
+    i2c_selected = [ "rtc/RX8010", "io/MCP23008", "dummy"]
+    i2c_env = env
+    (i2c_drivers, include) = SConscript(
+        f'{COMPONENTS}/c-i2c-drivers/SConscript', exports=['i2c_env', "i2c_selected"])
+    env['CPPPATH'] += [include]
+
+    spi_selected = [ "io/MCP23S08", "dummy"]
+    spi_env = env
+    (spi_drivers, include) = SConscript(
+        f'{COMPONENTS}/c-spi-drivers/SConscript', exports=['spi_env', "spi_selected"])
+    env['CPPPATH'] += [include]
+
     sources = Glob(f'{SIMULATOR}/*.c')
     sources += Glob(f'{SIMULATOR}/port/*.c')
     sources += [File(filename) for filename in Path('main/model').rglob('*.c')]
@@ -114,7 +136,7 @@ def main():
     sources += [File(f'{B64}/encode.c'),
                 File(f'{B64}/decode.c'), File(f'{B64}/buffer.c')]
 
-    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman)
+    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + debounce + i2c_drivers + spi_drivers + watcher)
     env.Depends(prog, translations)
     PhonyTargets("run", f"./{PROGRAM}", prog, env)
     compileDB = env.CompilationDatabase('build/compile_commands.json')

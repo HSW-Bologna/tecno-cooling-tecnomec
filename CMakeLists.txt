@@ -6,4 +6,4 @@ add_definitions(-DBUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION=320)
 add_definitions(-DBUILD_CONFIG_DISPLAY_VERTICAL_RESOLUTION=240)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(esp32-template-ui)
+project(tecno-cooling)

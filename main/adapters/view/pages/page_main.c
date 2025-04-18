@@ -70,10 +70,32 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     struct page_data *pdata = state;
 
-    msg.user_msg    = &pdata->cmsg;
-    pdata->cmsg.tag = VIEW_CONTROLLER_MESSAGE_TAG_NOTHING;
-
     switch (event.tag) {
+        case PMAN_EVENT_TAG_USER: {
+            view_event_t *view_event = event.as.user;
+            switch (view_event->tag) {
+                case VIEW_EVENT_TAG_BUTTON_CLICK: {
+                    switch (view_event->as.button_click) {
+                        case BSP_BUTTON_1:
+                        case BSP_BUTTON_2: {
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_test_inputs);
+                            break;
+                        }
+
+                        default:
+                            break;
+                    }
+                    break;
+                }
+
+                case VIEW_EVENT_TAG_PAGE_WATCHER: {
+                    break;
+                }
+            }
+
+            break;
+        }
+
         default:
             break;
     }

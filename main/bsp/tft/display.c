@@ -4,6 +4,8 @@
 #include <esp_err.h>
 #include <esp_freertos_hooks.h>
 #include <esp_log.h>
+#include <esp_lcd_panel_interface.h>
+#include <esp_lcd_panel_commands.h>
 #include <esp_lcd_panel_io.h>
 #include <esp_lcd_panel_vendor.h>
 #include <esp_lcd_panel_ops.h>
@@ -37,6 +39,7 @@ static esp_lcd_panel_io_handle_t lcd_io_handle = NULL;
 static esp_lcd_panel_handle_t    lcd_handle    = NULL;
 
 static void (*display_flush_ready)(void) = NULL;
+static esp_err_t panel_st7789_init(esp_lcd_panel_t *panel);
 
 
 static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata,
@@ -117,6 +120,7 @@ void bsp_tft_display_init(void (*display_flush_ready_cb)(void), size_t buffer_si
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST, &io_config, &lcd_io_handle));
 
     ESP_ERROR_CHECK(esp_lcd_new_panel_st7789(lcd_io_handle, &lcd_config, &lcd_handle));
+    lcd_handle->init = panel_st7789_init;
 
     ESP_ERROR_CHECK(esp_lcd_panel_reset(lcd_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(lcd_handle));
@@ -143,4 +147,37 @@ void bsp_tft_display_brightness_set(uint8_t brightness_percentage) {
     uint32_t duty_cycle = (1023 * brightness_percentage) / 100;
     ESP_ERROR_CHECK(ledc_set_duty(BACKLIGHT_LEDC_MODE, BACKLIGHT_LEDC_CHANNEL, duty_cycle));
     ESP_ERROR_CHECK(ledc_update_duty(BACKLIGHT_LEDC_MODE, BACKLIGHT_LEDC_CHANNEL));
+}
+
+
+typedef struct {
+    esp_lcd_panel_t           base;
+    esp_lcd_panel_io_handle_t io;
+    int                       reset_gpio_num;
+    bool                      reset_level;
+    int                       x_gap;
+    int                       y_gap;
+    uint8_t                   fb_bits_per_pixel;
+    uint8_t                   madctl_val;     // save current value of LCD_CMD_MADCTL register
+    uint8_t                   colmod_val;     // save current value of LCD_CMD_COLMOD register
+    uint8_t                   ramctl_val_1;
+    uint8_t                   ramctl_val_2;
+} st7789_panel_t;
+
+#define ST7789_CMD_RAMCTRL 0xb0
+
+static esp_err_t panel_st7789_init(esp_lcd_panel_t *panel) {
+    st7789_panel_t *st7789 = __containerof(panel, st7789_panel_t, base);
+    // LCD goes into sleep mode and display will be turned off after power on reset, exit sleep mode first
+    esp_lcd_panel_io_tx_param(lcd_io_handle, LCD_CMD_SLPOUT, NULL, 0);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    esp_lcd_panel_io_tx_param(lcd_io_handle, LCD_CMD_MADCTL, (uint8_t[]){st7789->madctl_val}, 1);
+    esp_lcd_panel_io_tx_param(lcd_io_handle, LCD_CMD_COLMOD,
+                              (uint8_t[]){// st7789->colmod_val,
+                                          0x5},
+                              1);
+    esp_lcd_panel_io_tx_param(lcd_io_handle, ST7789_CMD_RAMCTRL,
+                              (uint8_t[]){st7789->ramctl_val_1, st7789->ramctl_val_2}, 2);
+
+    return ESP_OK;
 }

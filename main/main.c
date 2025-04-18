@@ -15,6 +15,8 @@
 #include "bsp/temperature.h"
 #include "bsp/i2c_devices.h"
 #include "bsp/tft/display.h"
+#include "bsp/adc.h"
+#include "bsp/pwm.h"
 
 
 static const char *TAG = "Main";
@@ -27,18 +29,20 @@ void app_main(void) {
 
     bsp_system_init();
     bsp_buttons_init();
+    bsp_adc_init();
     bsp_buzzer_init();
     bsp_inputs_init();
     bsp_leds_init();
     bsp_temperature_init();
     bsp_tft_display_init(view_display_flush_ready, VIEW_LVGL_BUFFER_SIZE);
     bsp_i2c_devices_init();
+    bsp_pwm_init();
 
     model_init(&model);
     view_init(&model, controller_process_message, bsp_tft_display_lvgl_flush_cb, NULL);
     controller_init(&model);
 
-    bsp_buzzer_beep(1, 100, 50, 10);
+    bsp_buzzer_beep(2, 50, 50, 10);
     ESP_LOGI(TAG, "Begin main loop");
 
     for (;;) {

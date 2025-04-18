@@ -2,6 +2,7 @@
 #include "inputs.h"
 #include "debounce.h"
 #include "services/timestamp.h"
+#include "i2c_devices.h"
 
 
 static debounce_filter_t filter = {0};
@@ -23,10 +24,13 @@ void bsp_inputs_init(void) {
 uint8_t bsp_inputs_manage(void) {
     static timestamp_t ts = 0;
 
+    int level = 0;
+    mcp23008_get_gpio_level(bsp_io_expander_driver, MCP23008_GPIO_8, &level);
+
     if (timestamp_is_expired(ts, timestamp_get())) {
         unsigned int bits = ((gpio_get_level(BSP_HAP_IN1) == 0) << 0) | ((gpio_get_level(BSP_HAP_IN2) == 0) << 1) |
                             ((gpio_get_level(BSP_HAP_IN3) == 0) << 2) | ((gpio_get_level(BSP_HAP_IN4) == 0) << 3) |
-                            ((gpio_get_level(BSP_HAP_IN5) == 0) << 4);
+                            ((gpio_get_level(BSP_HAP_IN5) == 0) << 4) | ((level == 0) << 5);
 
         return debounce_filter(&filter, bits, 10);
     } else {
